@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="weaver — an architectural memory system for coding agents.">
+	<title>weaver · LaVorgia Warrens</title>
+	<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap"
+		rel="stylesheet">
+	<style>
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		html {
+			scroll-behavior: smooth;
+		}
+
+		:root {
+			color-scheme: dark;
+			--bg: #11100d;
+			--bg2: #181713;
+			--bg3: #201e19;
+			--border: #302e27;
+			--border2: #3d3a31;
+			--text: #f2ede2;
+			--muted: #99958b;
+			--dim: #6d6a63;
+			--blue: #d9ff57;
+			--green: #d9ff57;
+			--amber: #e66c3a;
+			--purple: #d9ff57;
+			--mono: 'DM Mono', ui-monospace, monospace;
+			--serif: 'Newsreader', Georgia, serif;
+			--sans: 'Manrope', system-ui, sans-serif;
+		}
+
+		body {
+			background:
+				radial-gradient(circle at 78% -10%, rgba(217, 255, 87, .08), transparent 34rem),
+				var(--bg);
+			color: var(--text);
+			font-family: var(--sans);
+			font-size: 15px;
+			line-height: 1.65;
+			-webkit-font-smoothing: antialiased;
+			overflow-x: hidden;
+		}
+
+		::selection {
+			background: var(--blue);
+			color: #111;
+		}
+
+		a {
+			color: var(--blue);
+			text-decoration: none;
+		}
+
+		a:hover {
+			text-decoration: underline;
+		}
+
+		a:focus-visible {
+			outline: 2px solid var(--blue);
+			outline-offset: 4px;
+		}
+
+		.site-header {
+			width: min(1180px, calc(100% - 40px));
+			margin: 0 auto;
+			min-height: 92px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 22px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.site-header .wordmark {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			font-weight: 600;
+			color: var(--text);
+		}
+
+		.site-header .wordmark .mark {
+			font: 500 12px var(--mono);
+			border: 1px solid var(--border2);
+			padding: 4px 7px;
+			border-radius: 6px;
+			color: var(--muted);
+		}
+
+		.site-header nav {
+			display: flex;
+			gap: 26px;
+			font: .8rem var(--mono);
+			text-transform: uppercase;
+			letter-spacing: .04em;
+		}
+
+		.site-header nav a {
+			color: var(--muted);
+		}
+
+		.site-header nav a:hover {
+			color: var(--blue);
+			text-decoration: none;
+		}
+
+		@media (max-width: 640px) {
+			.site-header {
+				flex-direction: column;
+				align-items: flex-start;
+				min-height: 0;
+				padding: 20px 0;
+			}
+		}
+
+		.wrap {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 0 1.75rem;
+		}
+
+		body>nav {
+			position: sticky;
+			top: 0;
+			z-index: 100;
+			background: rgba(17, 16, 13, 0.9);
+			backdrop-filter: blur(14px);
+			border-bottom: 1px solid var(--border);
+		}
+
+		.nav-inner {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 0 1.75rem;
+			height: 54px;
+			display: flex;
+			align-items: center;
+			gap: 1.5rem;
+		}
+
+		.nav-logo {
+			font-family: var(--mono);
+			font-size: 13px;
+			color: var(--muted);
+			letter-spacing: .04em;
+			flex: 1;
+		}
+
+		.nav-logo span {
+			color: var(--purple);
+		}
+
+		.nav-links {
+			display: flex;
+			gap: 1.5rem;
+		}
+
+		.nav-links a {
+			font-size: 12px;
+			color: var(--muted);
+			letter-spacing: .04em;
+			transition: color .15s;
+		}
+
+		.nav-links a:hover {
+			color: var(--text);
+			text-decoration: none;
+		}
+
+		.nav-pill {
+			font-family: var(--mono);
+			font-size: 11px;
+			background: rgba(56, 201, 138, 0.1);
+			color: var(--green);
+			border: 1px solid rgba(56, 201, 138, 0.2);
+			padding: 3px 11px;
+			border-radius: 100px;
+			white-space: nowrap;
+		}
+
+		.gh-link {
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--dim);
+			border: 1px solid var(--border2);
+			padding: 4px 12px;
+			border-radius: 6px;
+			transition: color .15s;
+		}
+
+		.gh-link:hover {
+			color: var(--text);
+			text-decoration: none;
+		}
+
+		.hero {
+			padding: 5rem 0 4rem;
+		}
+
+		.eyebrow {
+			font-family: var(--mono);
+			font-size: 11px;
+			letter-spacing: .16em;
+			text-transform: uppercase;
+			color: var(--green);
+			display: flex;
+			align-items: center;
+			gap: .6rem;
+			margin-bottom: 1.75rem;
+		}
+
+		.eyebrow::before {
+			content: '';
+			display: block;
+			width: 22px;
+			height: 1px;
+			background: var(--green);
+		}
+
+		h1 {
+			font-family: var(--serif);
+			font-size: clamp(2.6rem, 5.5vw, 4rem);
+			font-weight: 400;
+			line-height: 1.08;
+			letter-spacing: -.02em;
+			color: var(--text);
+			margin-bottom: 1.1rem;
+		}
+
+		h1 em {
+			font-style: italic;
+			color: var(--muted);
+		}
+
+		.hero-body {
+			font-size: 1.05rem;
+			color: var(--muted);
+			max-width: 580px;
+			line-height: 1.75;
+			margin-bottom: 2.5rem;
+		}
+
+		.hero-body strong {
+			color: var(--text);
+			font-weight: 500;
+		}
+
+		.hero-actions {
+			display: flex;
+			gap: .75rem;
+			flex-wrap: wrap;
+			align-items: center;
+			margin-bottom: 1.25rem;
+		}
+
+		.btn {
+			display: inline-block;
+			font-family: var(--mono);
+			font-size: 12px;
+			letter-spacing: .05em;
+			padding: 10px 22px;
+			border-radius: 7px;
+			transition: opacity .15s;
+		}
+
+		.btn-blue {
+			background: var(--blue);
+			color: #111;
+			font-weight: 500;
+		}
+
+		.btn-blue:hover {
+			opacity: .86;
+			text-decoration: none;
+		}
+
+		.btn-ghost {
+			background: transparent;
+			color: var(--muted);
+			border: 1px solid var(--border2);
+		}
+
+		.btn-ghost:hover {
+			color: var(--text);
+			border-color: rgba(255, 255, 255, 0.28);
+			text-decoration: none;
+		}
+
+		.hero-meta {
+			display: flex;
+			gap: 1.25rem;
+			flex-wrap: wrap;
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--dim);
+		}
+
+		.hero-meta .sep {
+			color: var(--border2);
+		}
+
+		.triptych {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 1px;
+			background: var(--border);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			overflow: hidden;
+			margin: 4rem 0 1rem;
+		}
+
+		.tri-cell {
+			background: var(--bg2);
+			padding: 1.5rem 1.4rem;
+		}
+
+		.tri-glyph {
+			font-size: 1.3rem;
+			margin-bottom: .9rem;
+		}
+
+		.tri-label {
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .12em;
+			text-transform: uppercase;
+			color: var(--dim);
+			margin-bottom: .5rem;
+		}
+
+		.tri-head {
+			font-size: 14px;
+			font-weight: 500;
+			color: var(--text);
+			margin-bottom: .35rem;
+		}
+
+		.tri-body {
+			font-size: 13px;
+			color: var(--muted);
+			line-height: 1.55;
+		}
+
+		.problem-note {
+			font-size: 13.5px;
+			color: var(--muted);
+			text-align: center;
+			line-height: 1.65;
+			margin-bottom: 3.5rem;
+			padding: 0 1rem;
+		}
+
+		.problem-note strong {
+			color: var(--text);
+			font-weight: 500;
+		}
+
+		.section-label {
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .15em;
+			text-transform: uppercase;
+			color: var(--dim);
+			display: flex;
+			align-items: center;
+			gap: .75rem;
+			padding-top: 3.5rem;
+			margin-bottom: 2rem;
+			border-top: 1px solid var(--border);
+		}
+
+		.section-label::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: var(--border);
+		}
+
+		.terminal {
+			background: var(--bg3);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			overflow: hidden;
+			margin: .9rem 0;
+		}
+
+		.t-bar {
+			background: rgba(255, 255, 255, 0.03);
+			padding: .55rem 1rem;
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			gap: .4rem;
+		}
+
+		.dot {
+			width: 9px;
+			height: 9px;
+			border-radius: 50%;
+		}
+
+		.dr {
+			background: #ff5f57;
+		}
+
+		.dy {
+			background: #febc2e;
+		}
+
+		.dg {
+			background: #28c840;
+		}
+
+		.t-label {
+			font-family: var(--mono);
+			font-size: 10px;
+			color: var(--dim);
+			margin-left: auto;
+			letter-spacing: .06em;
+		}
+
+		.t-body {
+			padding: 1.1rem 1.4rem;
+		}
+
+		pre {
+			font-family: var(--mono);
+			font-size: 12.5px;
+			line-height: 1.85;
+			white-space: pre-wrap;
+		}
+
+		.cm {
+			color: var(--dim);
+		}
+
+		.ck {
+			color: var(--blue);
+		}
+
+		.cs {
+			color: var(--amber);
+		}
+
+		.cv {
+			color: #9ecf9e;
+		}
+
+		.cc {
+			color: var(--green);
+		}
+
+		.steps {
+			display: flex;
+			flex-direction: column;
+			gap: 2.25rem;
+			margin: 1.5rem 0;
+		}
+
+		.step {
+			display: grid;
+			grid-template-columns: 38px 1fr;
+			gap: 1.25rem;
+			align-items: start;
+		}
+
+		.step-n {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			border: 1px solid var(--border2);
+			flex-shrink: 0;
+			margin-top: 3px;
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--muted);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.step-title {
+			font-size: 15px;
+			font-weight: 500;
+			color: var(--text);
+			margin-bottom: .3rem;
+		}
+
+		.step-body {
+			font-size: 13px;
+			color: var(--muted);
+			line-height: 1.6;
+		}
+
+		.step-body code {
+			font-family: var(--mono);
+			font-size: 12px;
+			background: rgba(255, 255, 255, 0.06);
+			padding: 1px 6px;
+			border-radius: 4px;
+			color: var(--amber);
+		}
+
+		.tools-tabs {
+			display: flex;
+			gap: 2px;
+			flex-wrap: wrap;
+			margin-bottom: -1px;
+		}
+
+		.tab {
+			font-family: var(--mono);
+			font-size: 11px;
+			letter-spacing: .06em;
+			padding: 6px 14px;
+			border-radius: 6px 6px 0 0;
+			border: 1px solid var(--border);
+			border-bottom: none;
+			background: var(--bg2);
+			color: var(--dim);
+			cursor: pointer;
+			transition: color .15s, background .15s;
+		}
+
+		.tab.on {
+			background: var(--bg3);
+			color: var(--text);
+			border-color: var(--border2);
+		}
+
+		.tab:hover:not(.on) {
+			color: var(--muted);
+		}
+
+		.tools-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1px;
+			background: var(--border2);
+			border: 1px solid var(--border2);
+			border-radius: 0 8px 8px 8px;
+			overflow: hidden;
+		}
+
+		.tool-card {
+			background: var(--bg2);
+			padding: 1.2rem 1.4rem;
+			transition: background .15s;
+		}
+
+		.tool-card:hover {
+			background: var(--bg3);
+		}
+
+		.tool-card.hide {
+			display: none;
+		}
+
+		.tool-name {
+			font-family: var(--mono);
+			font-size: 12px;
+			color: var(--blue);
+			margin-bottom: .4rem;
+		}
+
+		.tool-desc {
+			font-size: 13px;
+			color: var(--muted);
+			line-height: 1.55;
+		}
+
+		.ttag {
+			display: inline-block;
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .06em;
+			padding: 2px 8px;
+			border-radius: 4px;
+			margin-top: .55rem;
+		}
+
+		.ti {
+			background: rgba(56, 201, 138, 0.1);
+			color: var(--green);
+		}
+
+		.tq {
+			background: rgba(91, 138, 240, 0.1);
+			color: var(--blue);
+		}
+
+		.ta {
+			background: rgba(167, 139, 250, 0.1);
+			color: var(--purple);
+		}
+
+		.tw {
+			background: rgba(232, 160, 58, 0.1);
+			color: var(--amber);
+		}
+
+		.config-note {
+			font-size: 13.5px;
+			color: var(--muted);
+			line-height: 1.7;
+			margin-bottom: 1.5rem;
+			max-width: 640px;
+		}
+
+		.config-note code {
+			font-family: var(--mono);
+			font-size: 12px;
+			background: rgba(255, 255, 255, 0.06);
+			padding: 1px 6px;
+			border-radius: 4px;
+			color: var(--amber);
+		}
+
+		.model-rec {
+			background: var(--bg2);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 1.25rem 1.4rem;
+			display: flex;
+			gap: 1.5rem;
+			flex-wrap: wrap;
+			margin-bottom: 1rem;
+		}
+
+		.model-item {
+			flex: 1;
+			min-width: 200px;
+		}
+
+		.model-role {
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--dim);
+			margin-bottom: .3rem;
+		}
+
+		.model-name {
+			font-family: var(--mono);
+			font-size: 13px;
+			color: var(--green);
+			margin-bottom: .25rem;
+		}
+
+		.model-desc {
+			font-size: 12.5px;
+			color: var(--muted);
+			line-height: 1.5;
+		}
+
+		.model-desc code {
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--amber);
+		}
+
+		.model-divider {
+			width: 1px;
+			background: var(--border);
+			flex-shrink: 0;
+		}
+
+		.config-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+			margin-bottom: 1rem;
+		}
+
+		.cfg-card {
+			background: var(--bg2);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 1.25rem;
+		}
+
+		.cfg-head {
+			font-family: var(--mono);
+			font-size: 10.5px;
+			letter-spacing: .07em;
+			color: var(--muted);
+			margin-bottom: .9rem;
+			display: flex;
+			align-items: center;
+			gap: .5rem;
+		}
+
+		.cfg-dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+
+		.cfg-row {
+			margin-bottom: .6rem;
+		}
+
+		.cfg-var {
+			font-family: var(--mono);
+			font-size: 11.5px;
+			color: var(--amber);
+		}
+
+		.cfg-desc {
+			font-size: 12px;
+			color: var(--dim);
+			line-height: 1.4;
+		}
+
+		.cfg-note {
+			font-size: 12px;
+			color: var(--dim);
+			margin-top: .75rem;
+			padding-top: .75rem;
+			border-top: 1px solid var(--border);
+			line-height: 1.55;
+		}
+
+		.ex-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1.5rem;
+			margin-top: 1.5rem;
+		}
+
+		.ex-pane {
+			background: var(--bg2);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			overflow: hidden;
+		}
+
+		.ex-head {
+			padding: .55rem 1rem;
+			border-bottom: 1px solid var(--border);
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--dim);
+		}
+
+		.ex-body {
+			padding: 1rem 1.25rem;
+		}
+
+		.jl {
+			font-family: var(--mono);
+			font-size: 11.5px;
+			line-height: 1.85;
+			white-space: pre-wrap;
+		}
+
+		.gaps {
+			background: var(--bg2);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 1.25rem 1.4rem;
+			margin-top: 1.5rem;
+		}
+
+		.gaps-head {
+			font-family: var(--mono);
+			font-size: 10px;
+			letter-spacing: .1em;
+			text-transform: uppercase;
+			color: var(--dim);
+			margin-bottom: 1rem;
+		}
+
+		.gap-row {
+			display: flex;
+			gap: .75rem;
+			align-items: baseline;
+			padding: .45rem 0;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.gap-row:last-child {
+			border-bottom: none;
+		}
+
+		.gap-dot {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: var(--amber);
+			flex-shrink: 0;
+			margin-top: .42rem;
+		}
+
+		.gap-text {
+			font-size: 13px;
+			color: var(--muted);
+			line-height: 1.55;
+		}
+
+		.gap-text strong {
+			color: var(--text);
+			font-weight: 500;
+		}
+
+		.gap-text code {
+			font-family: var(--mono);
+			font-size: 11.5px;
+			background: rgba(255, 255, 255, 0.06);
+			padding: 1px 5px;
+			border-radius: 3px;
+			color: var(--amber);
+		}
+
+		.principles {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+			margin-top: 1.5rem;
+		}
+
+		.pr {
+			padding: 1.25rem;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+		}
+
+		.pr-num {
+			font-family: var(--mono);
+			font-size: 10px;
+			color: var(--dim);
+			margin-bottom: .4rem;
+		}
+
+		.pr-title {
+			font-size: 14px;
+			font-weight: 500;
+			color: var(--text);
+			margin-bottom: .3rem;
+		}
+
+		.pr-body {
+			font-size: 12.5px;
+			color: var(--muted);
+			line-height: 1.55;
+		}
+
+		.ic {
+			font-family: var(--mono);
+			font-size: 11px;
+			background: rgba(255, 255, 255, 0.06);
+			padding: 1px 5px;
+			border-radius: 3px;
+			color: var(--amber);
+		}
+
+		.phases {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			margin-top: 1.5rem;
+		}
+
+		.phase {
+			background: var(--bg2);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			padding: 1rem 1.25rem;
+			display: flex;
+			align-items: flex-start;
+			gap: 1rem;
+		}
+
+		.pbadge {
+			font-family: var(--mono);
+			font-size: 10px;
+			padding: 3px 10px;
+			border-radius: 100px;
+			white-space: nowrap;
+			flex-shrink: 0;
+			margin-top: 2px;
+		}
+
+		.p-done {
+			background: rgba(56, 201, 138, 0.1);
+			color: var(--green);
+			border: 1px solid rgba(56, 201, 138, 0.2);
+		}
+
+		.p-next {
+			background: rgba(91, 138, 240, 0.1);
+			color: var(--blue);
+			border: 1px solid rgba(91, 138, 240, 0.2);
+		}
+
+		.phase-title {
+			font-size: 14px;
+			font-weight: 500;
+			color: var(--text);
+			margin-bottom: .25rem;
+		}
+
+		.phase-items {
+			font-size: 12.5px;
+			color: var(--muted);
+			line-height: 1.65;
+		}
+
+		footer {
+			border-top: 1px solid var(--border);
+			margin-top: 5rem;
+			padding: 2rem 0 3rem;
+		}
+
+		.footer-inner {
+			max-width: 900px;
+			margin: 0 auto;
+			padding: 0 1.75rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+
+		.footer-left {
+			font-family: var(--mono);
+			font-size: 11px;
+			color: var(--dim);
+		}
+
+		.footer-links {
+			display: flex;
+			gap: 1.5rem;
+		}
+
+		.footer-links a {
+			font-size: 12px;
+			color: var(--dim);
+			transition: color .15s;
+		}
+
+		.footer-links a:hover {
+			color: var(--muted);
+			text-decoration: none;
+		}
+
+		@media (max-width: 660px) {
+
+			.triptych,
+			.tools-grid,
+			.ex-grid,
+			.principles,
+			.config-grid {
+				grid-template-columns: 1fr;
+			}
+
+			.model-divider {
+				display: none;
+			}
+
+			h1 {
+				font-size: 2.4rem;
+			}
+
+			.nav-links {
+				display: none;
+			}
+
+			body>nav {
+				position: static;
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<header class="site-header">
+		<a class="wordmark" href="/" aria-label="LaVorgia Warrens, home">
+			<span class="mark">LW</span>
+			<span>LaVorgia Warrens</span>
+		</a>
+		<nav aria-label="Primary navigation">
+			<a href="/projects/">Projects</a>
+			<a href="/writing/">Writing</a>
+			<a href="/work/">Work</a>
+		</nav>
+	</header>
+
+	<nav>
+		<div class="nav-inner">
+			<span class="nav-logo"><span>weaver</span></span>
+			<div class="nav-links">
+				<a href="#quickstart">quickstart</a>
+				<a href="#tools">tools</a>
+				<a href="#config">config</a>
+				<a href="#example">example</a>
+				<a href="#gaps">gaps</a>
+			</div>
+			<a class="gh-link" href="https://github.com/LWarrens/weaver">GitHub ↗</a>
+		</div>
+	</nav>
+
+	<div class="wrap">
+
+		<section class="hero">
+			<div class="eyebrow">Architectural memory for coding agents</div>
+			<h1>Your codebase remembers.<br><em>Now you can ask it.</em></h1>
+			<p class="hero-body">
+				<strong>weaver</strong> turns symbols, Git history, and ADRs into evidence-backed facts. Catch
+				constraint violations before they merge. Trace a symbol's full decision history. Detect accepted decisions that
+				no longer match reality.
+			</p>
+			<div class="hero-actions">
+				<a class="btn btn-blue" href="#quickstart">Get started →</a>
+				<a class="btn btn-ghost" href="#tools">Browse the tools</a>
+			</div>
+			<div class="hero-meta">
+				<span>MIT / Apache-2.0</span><span class="sep">·</span>
+				<span>Rust</span><span class="sep">·</span>
+				<span>SQLite bitemporal</span><span class="sep">·</span>
+				<span>optional embeddings</span><span class="sep">·</span>
+				<span>Streamable HTTP + stdio</span>
+			</div>
+		</section>
+
+		<div class="triptych">
+			<div class="tri-cell">
+				<div class="tri-glyph">📄</div>
+				<div class="tri-label">Code shows</div>
+				<div class="tri-head">What exists</div>
+				<div class="tri-body">Functions, structs, modules — current state, stripped of intention.</div>
+			</div>
+			<div class="tri-cell">
+				<div class="tri-glyph">📜</div>
+				<div class="tri-label">Git shows</div>
+				<div class="tri-head">What changed</div>
+				<div class="tri-body">Commits and diffs — the chronology, without the reasoning behind each decision.</div>
+			</div>
+			<div class="tri-cell">
+				<div class="tri-glyph">🗂</div>
+				<div class="tri-label">ADRs show</div>
+				<div class="tri-head">Why decisions were made</div>
+				<div class="tri-body">Prose documents that drift from reality and are almost never consulted before a change.
+				</div>
+			</div>
+		</div>
+		<p class="problem-note">
+			weaver enforces alignment across all three: <strong>a living bitemporal source of truth.</strong>
+			Voids in the record are filled with tagged synthetic data, so even when evidence isn't present,
+			relations stay discoverable.
+		</p>
+
+		<div class="section-label" id="quickstart">Quickstart</div>
+		<div class="steps">
+			<div class="step">
+				<div class="step-n">1</div>
+				<div>
+					<div class="step-title">Build and run the daemon</div>
+					<div class="step-body">Requires Rust toolchain. No <code>DATABASE_URL</code> needed — the database is created
+						automatically on first run.</div>
+					<div class="terminal">
+						<div class="t-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span
+								class="t-label">shell</span></div>
+						<div class="t-body">
+							<pre><span class="cc">cargo build --release</span>
+<span class="cm"># Persistent Streamable HTTP daemon (recommended)</span>
+<span class="cc">./target/release/weaver \
+  --db ./memory.db --daemon --bind 127.0.0.1:8444</span>
+<span class="cm"># MCP endpoint: http://127.0.0.1:8444/mcp</span>
+<span class="cm"># Preserve the mcp-session-id header from initialize</span></pre>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="step">
+				<div class="step-n">2</div>
+				<div>
+					<div class="step-title">Connect your MCP client</div>
+					<div class="step-body">Works with VS Code Copilot, Claude Desktop, and any Streamable HTTP client. Stdio is
+						also available for clients that don't support HTTP.</div>
+					<div class="terminal">
+						<div class="t-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span
+								class="t-label">mcp config</span></div>
+						<div class="t-body">
+							<pre>{
+	<span class="ck">"mcpServers"</span>: {
+		<span class="ck">"weaver"</span>: {
+			<span class="ck">"url"</span>: <span class="cs">"http://127.0.0.1:8444/mcp"</span>
+		}
+	}
+}</pre>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="step">
+				<div class="step-n">3</div>
+				<div>
+					<div class="step-title">Ingest your repository</div>
+					<div class="step-body">Run these three calls once. After that, <code>sync_incremental</code> resolves what
+						changed since the last index automatically — no need to re-run all three.</div>
+					<div class="terminal">
+						<div class="t-bar"><span class="dot dr"></span><span class="dot dy"></span><span class="dot dg"></span><span
+								class="t-label">initial ingest</span></div>
+						<div class="t-body">
+							<pre><span class="cm"># 1. Parse ADRs → decisions, constraints, supersession links</span>
+architecture.sync_adrs_from_git
+	{ <span class="ck">"repo_path"</span>: <span class="cs">"/your/repo"</span>, <span class="ck">"adr_glob"</span>: <span class="cs">"docs/adr/*.md"</span> }
+
+<span class="cm"># 2. Extract symbols + call graph + community detection</span>
+<span class="cm">#    Content-hash skipping keeps subsequent runs fast</span>
+architecture.ingest_symbols
+	{ <span class="ck">"repo_path"</span>: <span class="cs">"/your/repo"</span> }
+
+<span class="cm"># 3. Walk git history → commit ↔ decision links</span>
+architecture.sync_commits_from_git
+	{ <span class="ck">"repo_path"</span>: <span class="cs">"/your/repo"</span> }
+
+<span class="cm"># Subsequent runs — resolves changes automatically</span>
+architecture.sync_incremental
+	{ <span class="ck">"repo_path"</span>: <span class="cs">"/your/repo"</span> }</pre>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section-label" id="tools">Tools</div>
+		<p style="font-size:13.5px;color:var(--muted);margin-bottom:1.25rem;line-height:1.65;">
+			Tools across four categories. All return strict JSON. Every result is traceable to a source artifact.
+		</p>
+		<div class="tools-tabs">
+			<button class="tab on" onclick="ft('all',this)">all</button>
+			<button class="tab" onclick="ft('i',this)">ingest</button>
+			<button class="tab" onclick="ft('q',this)">query</button>
+			<button class="tab" onclick="ft('a',this)">analysis</button>
+			<button class="tab" onclick="ft('w',this)">write</button>
+		</div>
+		<div class="tools-grid">
+
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.sync_adrs_from_git</div>
+				<div class="tool-desc">Parses ADR markdown, upserts decisions and constraints, resolves supersession links. The
+					entry point for architectural memory. Idempotent — unchanged ADRs are skipped.</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.ingest_symbols</div>
+				<div class="tool-desc">Walks source files via tree-sitter with content-hash skipping. Extracts symbol spans and
+					enriched metadata (signature, cyclomatic complexity, visibility, decorators). Automatically runs containment
+					edges, HTTP route detection (Express, FastAPI, Flask, Actix-web), and label-propagation community detection.
+				</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.sync_commits_from_git</div>
+				<div class="tool-desc">Ingests git history and creates decision↔commit links. ADR IDs in commit messages score
+					0.95 confidence; keyword overlap scores 0.6. Embeds commit messages at ingest time if a provider is
+					configured. Idempotent.</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.sync_incremental</div>
+				<div class="tool-desc">Resolves what changed since the last index (or a given git ref / ISO-8601 timestamp) and
+					re-syncs only affected ADRs and source files. Use this for scheduled or CI-triggered updates after the initial
+					ingest.</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.record_decision_episode</div>
+				<div class="tool-desc">Stores architectural events from PR comments, meeting notes, or Slack threads. Embeds
+					content at ingest time. LLM-extracted facts are marked with their confidence. Discussion is never silently
+					promoted to accepted decision.</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+			<div class="tool-card" data-c="i">
+				<div class="tool-name">architecture.embed_all</div>
+				<div class="tool-desc">Backfills vector embeddings for all decisions, constraints, episodes, commits, and
+					symbols that don't yet have one. Idempotent — only unembedded entities are processed. Run once after enabling
+					a provider on an existing repo.</div>
+				<span class="ttag ti">ingest</span>
+			</div>
+
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.query</div>
+				<div class="tool-desc">Hybrid search via Reciprocal Rank Fusion across keyword (LIKE match on decision text and
+					ADR titles), semantic (cosine over stored embeddings, threshold 0.30), and graph (BFS on temporal_edges, depth
+					capped at 2) strategies. Degrades gracefully to keyword-only without embeddings.</div>
+				<span class="ttag tq">query</span>
+			</div>
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.find_decisions_for_code</div>
+				<div class="tool-desc">Resolves a file or symbol to its active decisions and constraints. Appends HTTP route
+					info when the file contains route definitions. Includes superseded decisions when historically relevant.
+					Module/service resolution returns a warning (not yet implemented).</div>
+				<span class="ttag tq">query</span>
+			</div>
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.index_status</div>
+				<div class="tool-desc">Reports the current state of the index per entity type: totals, embedding coverage
+					(embedded / total), and last ingested timestamps. Check this before querying to understand what's actually in
+					the store.</div>
+				<span class="ttag tq">query</span>
+			</div>
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.get_architecture</div>
+				<div class="tool-desc">High-level summary of ingested memory: decision and constraint counts, active decisions,
+					detected symbol communities with governing ADRs, warnings, and temporal context.</div>
+				<span class="ttag tq">query</span>
+			</div>
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.explain_answer</div>
+				<div class="tool-desc">Re-runs the query pipeline and returns per-step provenance: keyword terms and LIKE hits,
+					cosine scores per decision, BFS hops and neighbor IDs, and final RRF scores. Use this to understand why a
+					result ranked where it did.</div>
+				<span class="ttag tq">query</span>
+			</div>
+			<div class="tool-card" data-c="q">
+				<div class="tool-name">architecture.get_graph_schema</div>
+				<div class="tool-desc">Returns the concrete SQLite-backed graph schema, table roles, column definitions, and
+					optional row counts.</div>
+				<span class="ttag tq">query</span>
+			</div>
+
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.impact_of</div>
+				<div class="tool-desc">Graph traversal from an ADR across typed edges (applies_to, depends_on, conflicts_with)
+					up to max_depth hops. Returns affected files, symbols, and decisions with hop depth and edge confidence. Cycle
+					detection included. Respects valid_at filtering.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.diff_architecture</div>
+				<div class="tool-desc">Shows what changed in architectural memory between two points: decisions and constraints
+					added or removed, ADRs that appeared or closed. Accepts ISO-8601 strings or git refs — refs are resolved to
+					commit timestamps via git2.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.find_stale_decisions</div>
+				<div class="tool-desc">Detects accepted decisions that may no longer match implementation reality. Four
+					heuristic signals: deleted files (0.85), missing symbols (0.70), no recent commit activity (0.45), aged ADRs
+					not yet superseded (0.35). Results sorted by confidence.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.find_orphaned_code</div>
+				<div class="tool-desc">Finds files and symbols with zero governing decisions — code that exists outside the
+					known architectural record. Accepts an optional path prefix filter. Requires ingest_symbols to have been run
+					first.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.inspect_change_against_decisions</div>
+				<div class="tool-desc">Takes a changed file set and surfaces constraint violations before you merge. Loads all
+					active constraints for the repo — not just those with explicit file links. Confidence: high (accepted ADR),
+					medium (proposed), low (short constraint text).</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.trace_symbol_history</div>
+				<div class="tool-desc">Full architectural timeline for a named symbol: when it appeared, which decisions
+					governed it at each point, and which commits and episodes touched those decisions. Events sorted oldest to
+					newest.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.trace_call_path</div>
+				<div class="tool-desc">BFS over the symbol call graph (CALLS/IMPORTS edges) in outbound, inbound, or both
+					directions. Supports exact and suffix name matching. Returns the call chain with a truncation flag if
+					max_depth was reached. Respects valid_at filtering.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.adr_lineage</div>
+				<div class="tool-desc">Traverses the ADR supersession graph. Returns the full ancestor and descendant chain and
+					the live accepted authority at the end. Cycle detection included. Uses the existing supersession_edges table —
+					no schema changes required.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.propose_links</div>
+				<div class="tool-desc">Suggests candidate links (decisions, commits, symbols, routes) for an ADR via keyword +
+					embedding similarity. All candidates carry explicit confidence scores. Nothing is auto-promoted — review
+					before accepting.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+			<div class="tool-card" data-c="a">
+				<div class="tool-name">architecture.validate_adr</div>
+				<div class="tool-desc">Reads and validates an ADR file without writing to the database. Checks for missing
+					title, decision text, or status; detects unknown status values, duplicate ADR IDs, and invalid supersession
+					references. Returns errors and warnings separately.</div>
+				<span class="ttag ta">analysis</span>
+			</div>
+
+			<div class="tool-card" data-c="w">
+				<div class="tool-name">architecture.generate_adr_draft</div>
+				<div class="tool-desc">Produces an ADR markdown draft with the next sequential ID auto-assigned. Finds related
+					existing decisions via keyword search on the title. Does not write files — returns the markdown and any
+					warnings.</div>
+				<span class="ttag tw">write</span>
+			</div>
+			<div class="tool-card" data-c="w">
+				<div class="tool-name">architecture.generate_adr_patch</div>
+				<div class="tool-desc">Produces a git-ready unified diff for a new or updated ADR. Validates the target path
+					stays inside the repository root. Does not write files or apply the patch.</div>
+				<span class="ttag tw">write</span>
+			</div>
+			<div class="tool-card" data-c="w">
+				<div class="tool-name">architecture.retract</div>
+				<div class="tool-desc">Soft-deletes a hallucinated or incorrect LLM-extracted fact. Cascades from decision to
+					its active constraints. Optionally records a correction episode as an audit note. Idempotent — retracting an
+					already-retracted entity adds a warning but does not error.</div>
+				<span class="ttag tw">write</span>
+			</div>
+
+		</div>
+
+		<div class="section-label" id="config">Config: Embeddings &amp; LLM</div>
+		<p class="config-note">
+			All tools work without embeddings — <code>architecture.query</code> degrades gracefully to keyword search.
+			Add a provider to unlock semantic search and LLM-powered episode extraction.
+			Check <code>architecture.index_status</code> to see embedding coverage before querying.
+		</p>
+
+		<div class="model-rec">
+			<div class="model-item">
+				<div class="model-role">Recommended · summarization &amp; synthesis</div>
+				<div class="model-name">prism-ml/Bonsai-1.7B-gguf</div>
+				<div class="model-desc">Small, fast, runs locally via Ollama or LM Studio. Used for structured fact extraction
+					in <code>record_decision_episode</code>.</div>
+			</div>
+			<div class="model-divider"></div>
+			<div class="model-item">
+				<div class="model-role">Recommended · embedding</div>
+				<div class="model-name">microsoft/harrier-oss-v1-270m</div>
+				<div class="model-desc">Lightweight embedding model. Powers semantic search in <code>architecture.query</code>
+					and ingest-time vector storage across all entity types.</div>
+			</div>
+		</div>
+
+		<div class="config-grid">
+			<div class="cfg-card">
+				<div class="cfg-head"><span class="cfg-dot" style="background:var(--green)"></span>Embedding provider</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_EMBEDDING_PROVIDER</div>
+					<div class="cfg-desc">lmstudio · ollama · openai</div>
+				</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_EMBEDDING_URL</div>
+					<div class="cfg-desc">Base URL (default varies by provider)</div>
+				</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_EMBEDDING_MODEL</div>
+					<div class="cfg-desc">Model ID — set to harrier-oss-v1-270m for local use</div>
+				</div>
+				<div class="cfg-note">LM Studio: no API key required, default http://127.0.0.1:1234<br>Ollama: falls back to
+					nomic-embed-text if model is unset<br>OpenAI: requires OPENAI_API_KEY, default text-embedding-3-small</div>
+			</div>
+			<div class="cfg-card">
+				<div class="cfg-head"><span class="cfg-dot" style="background:var(--purple)"></span>LLM provider (episode
+					extraction)</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_LLM_PROVIDER</div>
+					<div class="cfg-desc">ollama · openai · mock</div>
+				</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_LLM_MODEL</div>
+					<div class="cfg-desc">Model ID — set to Bonsai-1.7B for local use</div>
+				</div>
+				<div class="cfg-row">
+					<div class="cfg-var">ARCH_MCP_OLLAMA_URL</div>
+					<div class="cfg-desc">Ollama base URL (default http://127.0.0.1:11434)</div>
+				</div>
+				<div class="cfg-note">Without an LLM provider, episodes are stored and keyword-searchable — only structured fact
+					extraction is skipped. Use mock for tests via ARCH_MCP_LLM_RESPONSE.</div>
+			</div>
+		</div>
+
+		<div class="section-label" id="example">See it in action</div>
+		<div class="ex-grid">
+			<div class="ex-pane">
+				<div class="ex-head">Request · architecture.query</div>
+				<div class="ex-body">
+					<div class="jl"><span style="color:var(--dim)">{</span>
+						<span class="ck">"query"</span>: <span class="cs">"Why is the order service event-driven?"</span>,
+						<span class="ck">"scope"</span>: { <span class="ck">"service"</span>: <span
+							class="cs">"order-service"</span> }
+						<span style="color:var(--dim)">}</span>
+					</div>
+				</div>
+			</div>
+			<div class="ex-pane">
+				<div class="ex-head">Response</div>
+				<div class="ex-body">
+					<div class="jl"><span style="color:var(--dim)">{</span>
+						<span class="ck">"answer"</span>: <span class="cs">"Event sourcing for auditability per ADR-0042"</span>,
+						<span class="ck">"decisions"</span>: [{ <span class="ck">"id"</span>: <span class="cs">"ADR-0042"</span>,
+						<span class="ck">"status"</span>: <span class="cs">"accepted"</span> }],
+						<span class="ck">"constraints"</span>: [{ <span class="ck">"text"</span>: <span class="cs">"Order state must
+							never be mutated in place"</span> }],
+						<span class="ck">"evidence"</span>: [{ <span class="ck">"type"</span>: <span class="cs">"commit"</span>,
+						<span class="ck">"ref"</span>: <span class="cs">"a3f1d9b"</span> }],
+						<span class="ck">"confidence"</span>: <span class="cv">0.91</span>, <span class="ck">"warnings"</span>: []
+						<span style="color:var(--dim)">}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="section-label" id="gaps">Known gaps</div>
+		<p style="font-size:13.5px;color:var(--muted);margin-bottom:1rem;line-height:1.65;max-width:640px;">Tracked
+			explicitly so the current implementation doesn't imply support it doesn't have.</p>
+		<div class="gaps">
+			<div class="gaps-head">Tracked implementation gaps</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>Entity resolution</strong> for episode-sourced decisions is partial. The
+					<code>entity_nodes</code> table exists and is populated, but <code>record_decision_episode</code> does not yet
+					deduplicate semantically similar decisions across episodes.</div>
+			</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>temporal_edges</strong> are populated for ADR-typed edges (applies_to, depends_on,
+					conflicts_with). Decision→Constraint and Commit→Decision edges are not yet emitted.</div>
+			</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>Module and service resolution</strong> in <code>find_decisions_for_code</code>
+					returns a warning. File and symbol resolution work fully.</div>
+			</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>pull_requests table</strong> exists but is not populated by any tool. Git commit
+					history is ingested; PR-level links are not.</div>
+			</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>evidence_spans</strong> are not yet populated by ADR sync or episode ingestion.
+				</div>
+			</div>
+			<div class="gap-row">
+				<div class="gap-dot"></div>
+				<div class="gap-text"><strong>Cross-ADR conflict detection</strong> and consistency checking are planned for
+					Phase 4.</div>
+			</div>
+		</div>
+		<div class="section-label">Design principles</div>
+		<div class="principles">
+			<div class="pr">
+				<div class="pr-num">01</div>
+				<div class="pr-title">Bitemporal integrity</div>
+				<div class="pr-body">Historical facts are never overwritten. Supersession closes <span
+						class="ic">valid_to</span> and creates a new record. Query as of any point in time.</div>
+			</div>
+			<div class="pr">
+				<div class="pr-num">02</div>
+				<div class="pr-title">Structured facts, before hallucinated context</div>
+				<div class="pr-body">Voids in the record are filled with tagged synthetic data. Every answer is traceable to a
+					decision, commit, file, or symbol. Conflicts are surfaced, not suppressed.</div>
+			</div>
+			<div class="pr">
+				<div class="pr-num">03</div>
+				<div class="pr-title">Controlled writes</div>
+				<div class="pr-body">No freeform memory. No vague entities. No implicit acceptance of proposals. No invented
+					links without confidence scores. The schema enforces what the rules require.</div>
+			</div>
+			<div class="pr">
+				<div class="pr-num">04</div>
+				<div class="pr-title">Canonical source hierarchy</div>
+				<div class="pr-body">When sources disagree: git wins for repo state, ADR markdown wins for accepted decisions.
+					<span class="ic">accepted</span> &gt; <span class="ic">proposed</span>. <span class="ic">superseded</span> ≠
+					current guidance.</div>
+			</div>
+		</div>
+		<div class="section-label">Roadmap</div>
+		<div class="phases">
+			<div class="phase">
+				<span class="pbadge p-done">✓ Phase 1–2</span>
+				<div>
+					<div class="phase-title">Core memory and code linking</div>
+					<div class="phase-items">ADR sync · bitemporal SQLite schema · tree-sitter symbol extraction · constraint
+						violation detection · keyword search · ADR draft generation</div>
+				</div>
+			</div>
+			<div class="phase">
+				<span class="pbadge p-done">✓ Phase 3</span>
+				<div>
+					<div class="phase-title">Embeddings, graph traversal, episodes, full analysis suite</div>
+					<div class="phase-items">Vector embeddings · RRF hybrid search · LLM episode extraction · call graph +
+						community detection · impact_of · sync_commits · sync_incremental · adr_lineage · retract · propose_links ·
+						find_stale_decisions · find_orphaned_code · trace_symbol_history · trace_call_path · index_status ·
+						validate_adr · diff_architecture · explain_answer</div>
+				</div>
+			</div>
+			<div class="phase">
+				<span class="pbadge p-next">→ Phase 4</span>
+				<div>
+					<div class="phase-title">Conflict detection, full edge coverage, integration tests</div>
+					<div class="phase-items">Cross-ADR consistency checking · conflict explanation · module/service resolution ·
+						Decision→Constraint and Commit→Decision temporal edges · pull_requests ingestion · evidence_spans population
+						· integration tests against fixture repositories · CI on PRs</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="footer-inner">
+			<span class="footer-left">weaver · MIT / Apache-2.0 · a project by LaVorgia Warrens</span>
+			<div class="footer-links">
+				<a href="https://github.com/LWarrens/weaver">GitHub</a>
+				<a href="/">lwarrens.github.io</a>
+			</div>
+		</div>
+	</footer>
+
+	<script>
+		function ft(cat, btn) {
+			document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+			btn.classList.add('on');
+			document.querySelectorAll('.tool-card').forEach(c => {
+				c.classList.toggle('hide', cat !== 'all' && c.dataset.c !== cat);
+			});
+		}
+	</script>
+</body>
+
+</html>
